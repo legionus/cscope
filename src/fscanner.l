@@ -178,19 +178,21 @@ wsnl		[ \t\r\v\f\n]|{comment}
 		}
 
 \{		{	/* count unmatched left braces for fcn def detection */
-			++braces;
-			
-			/* mark an untagged enum/struct/union so its beginning
-			   can be found */
-			if (tagdef) {
-				if (braces == 1) {
-					esudef = YES;
+			if (ppdefine == NO) {
+				++braces;
+				
+				/* mark an untagged enum/struct/union so its beginning
+				   can be found */
+				if (tagdef) {
+					if (braces == 1) {
+						esudef = YES;
+					}
+					token = tagdef;
+					tagdef = '\0';
+					last = first;
+					my_yymore();
+					return(token);
 				}
-				token = tagdef;
-				tagdef = '\0';
-				last = first;
-				my_yymore();
-				return(token);
 			}
 			goto more;
 			/* NOTREACHED */
@@ -326,28 +328,30 @@ wsnl		[ \t\r\v\f\n]|{comment}
 		}
 
 \}		{
-			/* could be the last enum member initializer */
-			if (braces == initializerbraces) {
-				initializerbraces = -1;
-				initializer = NO;
-			}
-			if (--braces <= 0) {
-		endstate:
-				braces = 0;
-				classdef = NO;
-			}
-			if (braces == 0 || (braces == 1 && classdef == YES)) {
-
-				/* if the end of an enum/struct/union definition */
-				if (esudef == YES) {
-					esudef = NO;
+			if (ppdefine == NO) {
+				/* could be the last enum member initializer */
+				if (braces == initializerbraces) {
+					initializerbraces = -1;
+					initializer = NO;
 				}
-				/* if the end of the function */
-				else if (fcndef == YES) {
-					fcndef = NO;
-					last = first;
-					my_yymore();
-					return(FCNEND);
+				if (--braces <= 0) {
+			endstate:
+					braces = 0;
+					classdef = NO;
+				}
+				if (braces == 0 || (braces == 1 && classdef == YES)) {
+
+					/* if the end of an enum/struct/union definition */
+					if (esudef == YES) {
+						esudef = NO;
+					}
+					/* if the end of the function */
+					else if (fcndef == YES) {
+						fcndef = NO;
+						last = first;
+						my_yymore();
+						return(FCNEND);
+					}
 				}
 			}
 			goto more;
