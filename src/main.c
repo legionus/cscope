@@ -153,7 +153,7 @@ char ** parse_options(int *argc, char **argv)
 	
 
 	while ((opt = getopt_long(argcc, argv,
-	       "hVbcCdeF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:TUuvX",
+	       "hVbcCdeF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:TUuvXK:",
 	       lopts, &longind)) != -1) {
 		switch(opt) {
 
@@ -272,6 +272,9 @@ char ** parse_options(int *argc, char **argv)
 			break;
 		case 's':	/* additional source file directory */
 			sourcedir(optarg);
+			break;
+		case 'K':
+			add_keyword(optarg);
 			break;
 		}
 	}

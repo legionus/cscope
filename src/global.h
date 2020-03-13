@@ -342,6 +342,7 @@ char	*read_block(void);
 char	*scanpast(char c);
 
 
+void	add_keyword(char *csk);
 void	addcmd(int f, char *s);
 void	addsrcfile(char *path);
 void	askforchar(void);

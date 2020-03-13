@@ -51,7 +51,9 @@ char	uniontext[] = "union";
  * without changing the database file version and adding compatibility code
  * for old databases.
  */
-struct	keystruct keyword[] = {
+#define KEYWORDS	64
+
+struct	keystruct keyword[KEYWORDS] = {
 	{"",		'\0',	NULL},	/* dummy entry */
 	{"#define",	' ',	NULL},	/* must be table entry 1 */
 	{"#include",	' ',	NULL},	/* must be table entry 2 */
@@ -93,7 +95,32 @@ struct	keystruct keyword[] = {
 	{"signed",	' ',	NULL},
 	{"volatile",	' ',	NULL},
 };
-#define KEYWORDS	(sizeof(keyword) / sizeof(keyword[0]))
+
+static int keyword_nr = 38;
+
+void add_keyword(char *csk)
+{
+	for (;;) {
+		char *eok = strchrnul(csk, ',');
+		int last = !*eok;
+
+		*eok = 0;
+		if (*csk) {
+			if (keyword_nr == KEYWORDS) {
+				fprintf(stderr, "KEYWORDS overflow\n");
+				myexit(1);
+			}
+			keyword[keyword_nr].text = csk;
+			keyword[keyword_nr].delim = '(';
+			keyword_nr++;
+		}
+
+		if (last)
+			break;
+		csk = eok + 1;
+	}
+}
+
 
 #define HASHMOD	(KEYWORDS * 2 + 1)
 
@@ -106,8 +133,8 @@ initsymtab(void)
 {
     unsigned int i, j;
     struct keystruct *p;
-	
-    for (i = 1; i < KEYWORDS; ++i) {
+
+    for (i = 1; i < keyword_nr; ++i) {
 	p = keyword + i;
 	j = hash(p->text) % HASHMOD;
 	p->next = hashtab[j];
